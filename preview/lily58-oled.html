@@ -1,0 +1,432 @@
+<title>Экраны Lily58</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: the two vertical OLEDs as they stand on the keyboard, controls beside them, then live variant cards.
+   Deliberately single dark theme: the subject is a lit OLED on black. */
+:root {
+  --bg: #101219;
+  --panel: #171a23;
+  --panel-2: #1e2230;
+  --line: #2b3040;
+  --fg: #e7e9f0;
+  --muted: #9097aa;
+  --accent: #f0a6c2;
+  --accent-ink: #2a1520;
+  --pixel: #dcf2ff;
+  --bezel: #07080c;
+  --font-display: "Pixelify Sans", "Courier New", monospace;
+  --font-body: "Onest", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--font-body); margin: 0; }
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 28px;
+}
+header { display: grid; gap: 6px; }
+h1 { font: 700 clamp(28px, 5vw, 40px)/1.05 var(--font-display); letter-spacing: .02em; margin: 0; text-wrap: balance; }
+h1 span { color: var(--accent); }
+.lead { color: var(--muted); margin: 0; max-width: 66ch; }
+
+.top { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 24px; align-items: start; }
+.stage { display: flex; gap: 22px; align-items: flex-start; }
+.half { display: grid; gap: 8px; justify-items: center; }
+.half-label {
+  font: 600 11px/1.3 var(--font-mono); text-transform: uppercase; letter-spacing: .12em;
+  color: var(--muted); text-align: center;
+}
+.half-label b { color: var(--accent); font-weight: 600; display: block; }
+.bezel { background: var(--bezel); border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
+.bezel canvas { display: block; width: 128px; height: 512px; image-rendering: pixelated; }
+
+.controls {
+  display: grid; gap: 18px; align-content: start;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0;
+}
+.ctl { display: grid; gap: 8px; min-width: 0; }
+.ctl-title { font: 600 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+.seg, .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.seg button, .chip {
+  font: 500 13px/1 var(--font-body); color: var(--fg); background: var(--panel-2);
+  border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; cursor: pointer;
+}
+.seg button[aria-pressed="true"], .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.typebox {
+  width: 100%; font: 14px/1.4 var(--font-mono); color: var(--fg); background: var(--panel-2);
+  border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px;
+}
+.wpm { font: 600 13px/1 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--muted); margin-left: auto; }
+.wpm b { color: var(--pixel); font-size: 18px; }
+.hint { color: var(--muted); font-size: 13px; margin: 0; }
+
+.grid-title { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+h2 { font: 700 22px/1.1 var(--font-display); margin: 0; letter-spacing: .02em; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 14px; }
+.card {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: start;
+  text-align: left; color: inherit; font: inherit;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; cursor: pointer;
+}
+.card[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.card canvas { display: block; width: 64px; height: 256px; background: var(--bezel); border-radius: 4px; image-rendering: pixelated; }
+.card-body { display: grid; gap: 8px; min-width: 0; }
+.card-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.card-name { font: 700 18px/1.2 var(--font-display); letter-spacing: .02em; width: 100%; }
+.tag {
+  font: 600 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .1em;
+  border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 4px 7px;
+}
+.tag.now { border-color: var(--accent); color: var(--accent); }
+.tag.new { color: var(--pixel); border-color: var(--pixel); }
+.card p { margin: 0; color: var(--muted); font-size: 14px; }
+.src { font: 12px/1.3 var(--font-mono); color: var(--muted); opacity: .8; overflow-wrap: anywhere; }
+.note { color: var(--muted); font-size: 13px; margin: 0; max-width: 70ch; }
+
+@media (max-width: 760px) {
+  .top { grid-template-columns: minmax(0, 1fr); }
+  .stage { justify-content: center; }
+  .bezel canvas { width: 96px; height: 384px; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Экраны <span>Lily58</span></h1>
+    <p class="lead">Оба OLED стоят вертикально, как у тебя на клавиатуре: 32x128, верх от тебя. Тот же шрифт и те же кадры, что пойдут в прошивку. Слева модификаторы, справа слой, WPM и анимация.</p>
+  </header>
+
+  <div class="top">
+    <section class="stage" aria-label="Экраны клавиатуры">
+      <div class="half">
+        <div class="half-label">Левая<b>мастер</b></div>
+        <div class="bezel"><canvas id="oled-left" width="160" height="640" aria-label="Левый экран: модификаторы и Caps Lock"></canvas></div>
+      </div>
+      <div class="half">
+        <div class="half-label">Правая<b id="right-name">Luna</b></div>
+        <div class="bezel"><canvas id="oled-right" width="160" height="640" aria-label="Правый экран: слой, WPM и анимация"></canvas></div>
+      </div>
+    </section>
+
+    <section class="controls" aria-label="Имитация печати">
+      <div class="ctl">
+        <span class="ctl-title">Скорость печати</span>
+        <div class="seg" id="modes">
+          <button type="button" data-mode="demo" aria-pressed="true">Демо по кругу</button>
+          <button type="button" data-mode="idle" aria-pressed="false">Простой</button>
+          <button type="button" data-mode="slow" aria-pressed="false">~30 WPM</button>
+          <button type="button" data-mode="fast" aria-pressed="false">~75 WPM</button>
+          <button type="button" data-mode="manual" aria-pressed="false">Печатаю сам</button>
+        </div>
+        <input id="typebox" class="typebox" type="text" autocomplete="off" spellcheck="false" placeholder="Кликни и печатай: нажатия идут в WPM, Ctrl и Shift тоже ловятся">
+        <p class="hint" id="mode-hint">Демо: 7 с простоя, потом 6 с медленной и 6 с быстрой печати.</p>
+      </div>
+      <div class="ctl">
+        <span class="ctl-title">Модификаторы</span>
+        <div class="row">
+          <button type="button" class="chip" id="mod-ctrl" aria-pressed="false">Ctrl</button>
+          <button type="button" class="chip" id="mod-shift" aria-pressed="false">Shift</button>
+          <button type="button" class="chip" id="mod-alt" aria-pressed="false">Alt</button>
+          <button type="button" class="chip" id="mod-gui" aria-pressed="false">GUI (Win)</button>
+          <button type="button" class="chip" id="mod-caps" aria-pressed="false">Caps Lock</button>
+          <span class="wpm" id="wpm-out">WPM <b>0</b></span>
+        </div>
+      </div>
+      <div class="ctl">
+        <span class="ctl-title">Слой</span>
+        <div class="seg" id="layers">
+          <button type="button" data-layer="QWRTY" aria-pressed="true">QWERTY</button>
+          <button type="button" data-layer="CLMAK" aria-pressed="false">Colemak</button>
+          <button type="button" data-layer="SYM  " aria-pressed="false">Sym/Num</button>
+          <button type="button" data-layer="NAV  " aria-pressed="false">Nav</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="grid-title">
+    <h2>Что показать на правом экране</h2>
+    <p class="hint">Клик по карточке ставит ее на правый экран.</p>
+  </section>
+  <section class="cards" id="cards"></section>
+  <p class="note">Bongo Cat, кот за столом и кораблик из прошлой версии нарисованы под горизонтальный экран 128x32 и в ширину 32 не помещаются, поэтому здесь их нет.</p>
+</div>
+
+<script>
+const DATA = {"font": "AAAAAAAAAABfAAAAAAcABwAAFH8UfxQAJCp/KhIAIxMIZGIANklWIFAAAAgHAwAAABwiQQAAAEEiHAAAKhx/HCoACAg+CAgAAIBwMAAACAgICAgAAABgYAAAIBAIBAIAPlFJRT4AAEJ/QAAAcklJSUYAIUFJTTMAGBQSfxAAJ0VFRTkAPEpJSTEAQSERCQcANklJSTYARklJKR4AAAAUAAAAAEA0AAAAAAgUIkEAFBQUFBQAAEEiFAgAAgFZCQYAPkFdWU4AfBIREnwAf0lJSTYAPkFBQSIAf0FBQT4Af0lJSUEAfwkJCQEAPkFBUXMAfwgICH8AAEF/QQAAIEBBPwEAfwgUIkEAf0BAQEAAfwIcAn8AfwQIEH8APkFBQT4AfwkJCQYAPkFRIV4AfwkZKUYAJklJSTIAAwF/AQMAP0BAQD8AHyBAIB8AP0A4QD8AYxQIFGMAAwR4BAMAYVlJTUMAAH9BQUEAAgQIECAAAEFBQX8ABAIBAgQAQEBAQEAAAAMHCAAAIFRUeEAAfyhERDgAOERERCgAOEREKH8AOFRUVBgAAAh+CQIAGCQkHHgAfwgEBHgAAER9QAAAIEBAPQAAfxAoRAAAAEF/QAAAfAR4BHgAfAgEBHgAOERERDgAfBgkJBgAGCQkGHwAfAgEBAgASFRUVCQABAQ/RCQAPEBAIHwAHCBAIBwAPEAwQDwARCgQKEQATJCQkHwARGRUTEQAAAg2QQAAAAB3AAAAAEE2CAAAAgECBAIA", "luna": {"sit": ["AAAAAAAAAAAAAAAAAADgHAIFAiQEBAKpHuAAAAAAAAAAAAAAAADgEAhoEAgEAwAAAAAAAAACBoJ8AwAAAAAAAAAAAAAAAAECBAwQECAgICg+HCAgPg8RHwAAAAAAAAAA", "AAAAAAAAAAAAAAAAAADgHAIFAiQEBAKpHuAAAAAAAAAAAAAAAOCQCBhgEAgEAwAAAAAAAAACDoJ8AwAAAAAAAAAAAAAAAAECBAwQECAgICg+HCAgPg8RHwAAAAAAAAAA"], "walk": ["AAAAAACAQCAQkJCQoMCAgIBwCBQIkBAQCKR4gAAAAAAAAAAAAAcI/AEAAAAAgAAAAQAAAAAAAAgY6hAPAAAAAAAAAAAAAAADHCAgPA8RHwMGGCAgPAwSHgEAAAAAAAAA", "AAAAAAAAgEAgICBAgAAAAADgECgQICAgEEjwAAAAAAAAAAAAAB8g+AIBAQEBAQEBAwAAAAABABAw1SAfAAAAAAAAAAAAAAA/IDAMAgUJEh4CHBQIECAsMgEAAAAAAAAA"], "run": ["AAAAAOAQCAjIsICAgICAgIBAQDwUBAiQGAQIsECAAAAAAAAAAQLEpPwAAAAAgAAAAAAAAAAAAIDIWCgqEA8AAAAAAAAADgkEBAQEAgMCAQECAgQIECYrMgQFBgAAAAAA", "AAAA4BAQ8AAAAAAAAAAAgICAeCgIECAwCBAgQIAAAAAAAAADBAgQEfkBAQEBAQEAAAAAAAAAAAEQsFBVIB8AAAAAAAAAAAAAAAECDBAgKDcCHiAgGAwUHgEAAAAAAAAA"], "bark": ["AMAgENAwAAAAAAAAAICAQDwUBAiQGAQIsECAAAAAAAAAAwQIEBH5AQEBAQEBAAAAAAAAAIDISCgqEA8AAAAAAAAAAAAAAAABAgwQICg3AgIECBAmKzIEBQYAAAAAAAAA", "AOAQEPAAAAAAAAAAAICAQEAsFAQIkBgECLBAgAAAAAAAAwQIEBH5AQEBAQEBAAAAAAAAAACAwEgoKhAPIEoJEAAAAAAAAAABAgwQICg3AgIECBAmKzIEBQYAAAAAAAAA"], "sneak": ["AAAAAAAAgEBAQECAAAAAAAAAwEBAgACAQIAAAAAAAAAAAAAAHiHwBAICAgIDAgIEBAQDAQAACQGAgKsE+AAAAAAAAAAAAAMcICA8DxEfAgYYICA4CBAYBAQCAgEAAAAA", "AAAAAAAAgEBAQIAAAAAAAAAA4KAgQIDAIECAAAAAAAAAAAAAPkHwBAICAgMCAgIEBAIBAAAABABAQFWCfAAAAAAAAAAAAD8gMAwCBQkSHgQYEAgQICg0BgIBAQAAAAAA"]}, "mage": {"idle": ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgICAAAAAAADAMBDIyMgQMMAAAACAQMDwOBwcFjI/b3N9dzcfPQoOjk8mlMEBAQQGAQDg+B4PAwFw+Pj4/P5+P59PJ5LI5PP4+v7//x8+/MgQAA8AARAQPB/PI5PJ5PL5/P7+///54cEDAwMHAAAABwAAACAQCAQCCRwePz//Px+fn/8fPz8/Px8cAAAAAAAAAAAAAAAAAAAAAAAAAPIMgQCAAP4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR+j/////HwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAd/9/DwcAAAAAAAAAAAAAAAAAAA==", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgICAAAAAAADAMBDIyMgQMMAAAAAAgIDQOJwcFjI/b3N9dzcfPQoOjk8mFMEBAQQGAQDA8D0eBwNx+Pj4/P5+P59PJ5LI5PP4+v///j58+JAgAB8BAhAQOB/PI5PJ5PL5/P7+///54cEHAwMHAAABDwAAACAQCAQCCRwePz//Px+fn/8fPz8/Px8cAAAAAAAAAAAAAAAAAAAAAAAAAPIMgQCAAP4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR+j/////HwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAd/9/DwcAAAAAAAAAAAAAAAAAAA==", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAwIAAAAAAAAAAAAAAAAAAAACAgICAABA4EADAMBDIyMgRMMAAAACAQMDwOBwcFjI/b3N9dzcfPQoOjk8mlMEBAQQGAQDg+B4PAwFw+Pj4/P5+P59PJ5LI5PP4+v7//x8+/MgQAA8AARAQPB/PI5PJ5PL5/P7+///54cEDAwMHAAAABwAAACAQCAQCCRwePz//Px+fn/8fPz8/Px8cAAAAAAAAAAAAAAAAAAAAAAAAAPIMgQCAAP4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR+j/////HwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAd/9/DwcAAAAAAAAAAAAAAAAAAA=="], "cast": ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAwIAAAAAAAAAAAAAAAAAAAACAgICAABA4EADAMBDIyMgRMMAAAACAQMDwOBwcFjI/b3N9dzcfPQoOjk8mlMEBAQQGAQDg+B4PAwFw+Pj4/P5+P59PJ5LI5PP4+v7//x8+/MgQAA8AARAQPB/PI5PJ5PL5/P7+///54cEDAwMHAAAABwAAACAQCAQCCRwePz//Px+fn/8fPz8/Px8cAAAAAAAAAAAAAAAAAAAAAAAAAPIMgQCAAP4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR+j/////HwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAd/9/DwcAAAAAAAAAAAAAAAAAAA==", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgICAAAAAAQPBMBDIyMgQMMAAAAAAgIDQOJwcFjI/b3N9dzcfPQoOjk9m9MEBAQQGAQDA8D0eBwNx+Pj4/P5+P59PJ5LI5PP4+v///j58+JAgAB8BAhAQOB/PI5PJ5PL5/P7+///54cEHAwMHAAABDwAAACAQCAQCCRwePz//Px+fn/8fPz8/Px8cAAAAAAAAAAAAAAAAAAAAAAAAAPIMgQCAAP4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR+j/////HwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAd/9/DwcAAAAAAAAAAAAAAAAAAA=="], "fast": ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgcCAAAAAAAAAAAAAAAICAwMDgYODgwESOhIDwjARycnIEjHAAAACg0PB8DgcHBQyPm9zf3c2HDwLDI5OJ5fDAgAEBAAD4PkcDAADc/v7+fz+fTyeTieTyeXx+/v///wcPP/IEAAMAAAQEj0cziOTy+fz+///////++PDAAAABAAAAAQAAAAgEAgEAAgcHDw+/D0cnJz+HTw8PDwcHAAAAAAAAAAAAAAAAAAAAAAAAAPwD4MDgwP9AAAAAAAAAAAAAAAAAAAAAAAAAgECAAAAAEfr/////BwAAAAAAAAAAAAAAAAAAABAoEAAAAQAAAAAQHT8fAwEAAAAAAAQKBAAgUCAAAA==", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgICAAAAAAQPBMBDIyMgQMMAAAAAAgIDQOJwcFjI/b3N9dzcfPQoOjk9m9MEBAQQGAQDA8D0eBwNx+Pj4/P5+P59PJ5LI5PP4+v///j58+JAgAB8BAhAQOB/PI5PJ5PL5/P7+///54cEHAwMHAAABDwAAACAQCAQCCRwePz//Px+fn/8fPz8/Px8cAAAAAAAAAAAAAAAAAAAAAAAAAPIMgQCAAP4BAAAAAAAAAAAAAAAAAECgQAAAAAAAAAAAR+j/////HwEAAAAAAAAAgAAAAAAAAAAACBQIAAAAAABAd/9/DwcAAAAgUCAAAAECAQAAAA=="], "sleep": ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIKBgIAAEBgUEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAACBgYGBAAAAAADAMBDIyMgQMMAAAACAQMDwOBwcFjI/b3N9dzcfPQoOjk8mlMEBAQQGAQDg+B4PAwFw+Pj4/P5+P59PJ5LI5PP4+v7//x8+/MgQAA8AARAQPB/PI5PJ5PL5/P7+///54cEDAwMHAAAABwAAACAQCAQCCRwePz//Px+fn/8fPz8/Px8cAAAAAAAAAAAAAAAAAAAAAAAAAPIMgQCAAP4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR+j/////HwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAd/9/DwcAAAAAAAAAAAAAAAAAAA==", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABCQUDAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEhoWEgAAQEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAACAgICAAAAAAADAMBDIyMgQMMAAAAAAgIDQOJwcFjI/b3N9dzcfPQoOjk8mFMEBAQQGAQDA8D0eBwNx+Pj4/P5+P59PJ5LI5PP4+v///j58+JAgAB8BAhAQOB/PI5PJ5PL5/P7+///54cEHAwMHAAABDwAAACAQCAQCCRwePz//Px+fn/8fPz8/Px8cAAAAAAAAAAAAAAAAAAAAAAAAAPIMgQCAAP4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR+j/////HwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAd/9/DwcAAAAAAAAAAAAAAAAAAA=="], "jump": ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQOBMBAICAgQMAAAAAAAAAAQOBwcFjI/LzO9t7efPQoODg/mNAHBwcQGAcAAMD0eh4PxOLg4PD4+f19PZxIIJDM4un9//v48OBAgAB/BwhAQOB9P49PJ5PJ5PL5+P7/54cHHw8PHwABBz4AAACAQCAQCCRzeP7///9/f3//f/////98cAAAAAAAAAAAAAAAAAAAAAAAAADLMAQCAgP4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+g/vz+/H8EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAd///z8fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQMBAAAAAAAAAAAAAAAAAAAAAA=="], "caps": ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADg4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG9vAAAAAAAAAAAAAACAwIAAAAAAAAAAAAAAAAAAAACAgICAABA4EADAMBDIyMgRMMAAAACAQMDwOBwcFjI/b3N9dzcfPQoOjk8mlMEBAQQGAQDg+B4PAwFw+Pj4/P5+P59PJ5LI5PP4+v7//x8+/MgQAA8AARAQPB/PI5PJ5PL5/P7+///54cEDAwMHAAAABwAAACAQCAQCCRwePz//Px+fn/8fPz8/Px8cAAAAAAAAAAAAAAAAAAAAAAAAAPIMgQCAAP4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR+j/////HwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAd/9/DwcAAAAAAAAAAAAAAAAAAA=="]}, "girl": {"idle": ["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"], "type": ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgMDA4ODw8PDw8PAA4EBAgICAgICAQEDgAAAAgPD8/v////////////////B/9PTy8vPz8vL0hA8AAAA////3AwdDgYEDAQEDBwMBAACAgUMHAwH3//8/AAAAgPD///94QARCAgEAAAAAAAAAAQICRABAeP////AAAAAD///HO8Y8eAAAAAAAwgICwgAAAAAAePz+/////wAAAMD////++WYY5Bw8/PjhgIDh+Pw8HIxwj3//////wAAA//////8fAMA/APhwMTc/PzcxcPgAH+Af4B//////AAAABx8HAAAA/wAAAAAAAAAAAAAAAAAA/+D3+Pf/BwAAAAAAAPCgeAcDA+MfAwMD//8DAwMf4wMDB3mBAQAAAAAACBycfwcAAADgHwAAAAD//wAAAAAf4AAAAAd4gAAAAAAAAAMCAgICAgP+AgL+AgMDAv4CAv4DAgICAgIDAAAAAAAAAAAAAAAAf0BAfwAAAAAAAH9AQH8AAAAAAAAAAAAAAAAAAAAAAAD/////AAAAAAAA/////wAAAAAAAAAAAAAAAAAAAAAAHB8/Pz8cHAAAABwfPz8/HBwAAAAAAAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBA=", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICAwMDg4ODg4OAAwICAAAAAAAAAgIDAAAAAAOD4/P7//////////////+D/6Ojl5efn5eXoCB8AAAB////vBw+HAwMHAwMHDwcDAQABA4cPBwPv//9/AAAAAOD////wgAiFBQIAAAAAAAAAAgUFiACA8P///+AAAAAA//////z48AAAAAAAhAQEhAAAAAAA8HiMd4///wcAAID//////x/gGDh4+PDDAADD8Ph4OMgwzPP8////gAAA/////z/AP4B/APDhY29/f29j4fAAP8AAP///////AAABD//v8O/A/wAAAQAAAAAAAAAAAQAA/wAAAQ8/DwEAAAAAAQMD8w8HBsY+BgYG/v4GBgY+xgYHDvAAAAAAAAAAAAAA8A8AAADAPwAAAAD//wAAAAA/wAAAAA/wAAAAAAAAAAcEBAQEBAf8BAT8BAcHBPwEBPwHBAQEBAQHAAAAAAAAAAAAAAAAAAH+gIH+AAD+gYD+AQAAAAAAAAAAAAAAAAAAAAAAAAAAAP7+/v4AAP7+/v4AAAAAAAAAAAAAAAAAAAAAAAAAAAA4P39/fzg4P39/fzg4AAAAAAAAAAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBA="], "fast": ["AICA4ICAAAAAAAAAAAAAAAAAAAAAAAAAABAQfBAQAAAAAAADAIDA4PDw+Pj8/Pz8/PwA+BAQoKDg4KCgEBD4AAAA4Pz//////39//39/////fzwfPX38/Px8/Pz94QMAAAAP///9AAGAYCDAAAAAAQAAAIBgIMABAAD9//8PAAAA4Pz///+eEAAQAAAAAMDg4MAAAAAAEAAQnv////zgAAAA///xjnGPHgAAAAAAcAEBcAAAAAAAHo9xjvH//wAAAPD//////hkG+QcPP3744OD4fj8PB/kGGf7/////8AAAP////z8HAPAPAD4cDA0PDw0MHD4AB/gABz////8/AAAAAQcBAADA/8DAwMDAwMDAwMDAwMDA/8AAAAEHAQAAAAAAAADgHgEAAPgHAAAA//8AAAAH+AAAAR7gAADAAAAAAADgnoGAgID4h4CAgID//4CAgICH+ICAgIGf4QcBAQAAAAAAAAAAAPgHAPgHAAAAAAf4AAf4AAAAAAAAAAAAAAAAAAAAAADe0dDeAQAAAAAAAAHe0NHeAAAAAAAAAAAAAAAAAAAAAP////8AAAAAAAAAAP////8AAAAAAAAAAAAAAAAAAAAHBw8PDwcHAAAAAAAHBw8PDwcHAAAAAAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBA=", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICAwMDg4ODg4OAAwICAAAAAAAAAgIDAAAAAAOD4/P7//////////////+D/6Ojl5efn5eXoCB8AAAB////vBw8HAwMHAwMHDwcDAQABAwcPBwPv//9/AAAAAOD////wgASDAQYAAAAAAAAABAMBhgCA8P///+AAAAAH//+Pd4x48AAAAAAAhg8PhgAAAAAA8HiMd4///wcAAID////888wwyDh4+PDDAADD8Ph4OMgwzPP8////gAAA//////8/AIB/APDhY29/f29j4fAAP8AAP///////AAABDz8PAQAA/wAAAQAAAAAAAAAAAQAA/wAAAQ8/DwEAAAAAAAAA8A4HBsY+BgYG/v4GBgY+xgYHDvAAAAAAAAAAAAAA8A8AAADAPwAAAAD//wAAAAA/wAAAAA/wAAAAAAAAAAcEBAQEBAf8BAT8BAcHBPwEBPwHBAQEBAQHAAAAAAAAAAAAAAAAAP+AgP8AAAAA/4CA/wAAAAAAAAAAAAAAAAAAAAAAAAAA/v7+/gAAAAD+/v7+AAAAAAAAAAAAAAAAAAAAAAAAADg/f39/ODgAOD9/f384OAAAAAAAAAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBA="], "sleep": ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABCQUDAQAAAAAAAAAAAAAAAAgIDAwMDAwMAAgCQ0LCQAAQEBAQGAAAAAAMDw+Pz+/////////////8D/0dHKys7OysrRET8AAAD+///fDx8PBwcPBwcPHw8HAwEDBw8fDwff///+AAAAAMD////gBAgICAgEAAAAAAAECAgICAQA4P///8AAAAAA//////nx4AEAAAAACAgICAAAAAAB4PH5/////wAAAAD//////z/BMHDw8OCHAACH4PDwcDDBP///////AAAA/////3+BfgH+AODDx9/+/t/Hw+AAfoF+gX//////AAADH//f4N+A/wAAAwEAAAAAAAABAwAA/4Df4N//HwMAAAAAAwcH5x8PDIx8DAwM/PwMDAx8jAwPH+cHBwMAAAAAAAAA4B4BAACAfwAAAAD//wAAAAB/gAAAAR7gAAAAAAAAAA4JCAgICA/4CAj4CA8PCPgICPgPCAgICAkOAAAAAAAAAAAAAAAAAP8AAP8AAAAA/wAA/wAAAAAAAAAAAAAAAAAAAAAAAAAA/f39/QAAAAD9/f39AAAAAAAAAAAAAAAAAAAAAAAAAHB/////cHAAcH////9wcAAAAAAAAAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBA=", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgIDAwMDAwMAAgAAAAAAAAAAAAACAAAAAAMDw+Pz+/////////////8D/0dHKys7OysrRET8AAAD+///fDx8PBwcPBwcPHw8HAwEDBw8fDwff///+AAAAAMD////gBAgICAgEAAAAAAAECAgICAQA4P///8AAAAAA//////nx4AEAAAAACAgICAAAAAAB4PH5/////wAAAAD//////z/BMHDw8OCHAACH4PDwcDDBP///////AAAA/////3+BfgH+AODDx9/+/t/Hw+AAfoF+gX//////AAADH//f4N+A/wAAAwEAAAAAAAABAwAA/4Df4N//HwMAAAAAAwcH5x8PDIx8DAwM/PwMDAx8jAwPH+cHBwMAAAAAAAAA4B4BAACAfwAAAAD//wAAAAB/gAAAAR7gAAAAAAAAAA4JCAgICA/4CAj4CA8PCPgICPgPCAgICAkOAAAAAAAAAAAAAAAAAP8AAP8AAAAA/wAA/wAAAAAAAAAAAAAAAAAAAAAAAAAA/f39/QAAAAD9/f39AAAAAAAAAAAAAAAAAAAAAAAAAHB/////cHAAcH////9wcAAAAAAAAAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBA="], "jump": ["AAAAAAAAAACAgMDA4ODg4ODgAMCAgAAAAAAAAICAwAAAAADg+Pz+///////////////g/+jo5eXn5+Xl6AgfAAAAf///7wcPBwMDBwMDBw8HAwEAAQMHDwcD7///fwAAAADg////8IAEgwEGAAAAAAAAAAQDAYYAgPD////gAAAAB///j3eMePAAAAAAAIYPD4YAAAAAAPB4jHeP//8HAACA/////PPMMMg4ePjwwwAAw/D4eDjIMMzz/P///4AAAP//////PwCAfwDw4WNvf39vY+HwAD/AAD///////wAAAQ8/DwEAAP8AAAEAAAAAAAAAAAEAAP8AAAEPPw8BAAAAAAAAAPAOBwbGPgYGBv7+BgYGPsYGBw7wAAAAAAAAAAAAAPAPAAAAwD8AAAAA//8AAAAAP8AAAAAP8AAAAAAAAAAHBAQEBATHPATEPAQHBwQ8xAQ8xwQEBAQEBwAAAAAAAAAAAAAA8I+A8A8AAAAAAAAP8ICP8AAAAAAAAAAAAAAAAAAAAAD+/v7+AAAAAAAAAAD+/v7+AAAAAAAAAAAAAAAAAAAAOD9/f384OAAAAAAAOD9/f384OAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBA="], "caps": ["AAAAAAAAAAAAAAAAAAAA/PwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICAwMDg4ODt7eAAwICAAAAAAAAAgIDAAAAAAOD4/P7//////////////+D/6Ojl5efn5eXoCB8AAAB////vBy/nY2PnIwMHDwcDIeBhY+cvBwPv//9/AAAAAOD////wgA+eFg8AAAAAAAAADx4WjwCA8P///+AAAAAA//////z48AAAAAAAhg8PhgAAAAAA8Pj8/////wAAAID//////x/gGDh4+PDDAADD8Ph4OBjgH///////gAAA/////z/AP4B/APDhY29/f29j4fAAP8A/wD//////AAABD//v8O/A/wAAAQAAAAAAAAAAAQAA/8Dv8O//DwEAAAAAAQMD8w8HBsY+BgYG/v4GBgY+xgYHD/MDAwEAAAAAAAAA8A8AAADAPwAAAAD//wAAAAA/wAAAAA/wAAAAAAAAAAcEBAQEBAf8BAT8BAcHBPwEBPwHBAQEBAQHAAAAAAAAAAAAAAAAAP+AgP8AAAAA/4CA/wAAAAAAAAAAAAAAAAAAAAAAAAAA/v7+/gAAAAD+/v7+AAAAAAAAAAAAAAAAAAAAAAAAADg/f39/ODgAOD9/f384OAAAAAAAAAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBA="]}, "duck": {"idle": ["AADAwMDAwMDA+PgeHv7++AAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwP/////////gICAgICAgICAgICAgICAAAAAAAAAAAAAAH9///////+fn4eHgYGBYWEZGQcHAQEAAAAAAAAAAAAAAAABAWFhfwEBYWF/AQEAAAAAAAAAAAA=", "AACAgICAgICA8PA8PPz88AAAAAAAAAAAAAAAAAAAAAAAAAEBBwcHBwf///7+////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////////8/Pw8PAwMDw8MzMw8PAwMAAAAAAAAAAAAAAAADA2NjfwMDY2N/AwMAAAAAAAAAAAA="]}};
+
+const dec = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const frames = {};
+for (const [k, v] of Object.entries(DATA)) {
+  if (k === 'font') continue;
+  frames[k] = {};
+  for (const [n, list] of Object.entries(v)) frames[k][n] = list.map(dec);
+}
+const FONT = dec(DATA.font);
+const css = getComputedStyle(document.documentElement);
+const PIXEL = css.getPropertyValue('--pixel').trim();
+const BEZEL = css.getPropertyValue('--bezel').trim();
+
+/* Vertical OLED as QMK sees it after OLED_ROTATION_270: 32 columns x 16 pages, byte = 8 vertical pixels */
+const W = 32, H = 128;
+class Oled {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.buf = new Uint8Array(W * H / 8);
+    this.off = document.createElement('canvas');
+    this.off.width = W; this.off.height = H;
+    this.offCtx = this.off.getContext('2d');
+    this.img = this.offCtx.createImageData(W, H);
+    this.rgb = PIXEL.match(/\w\w/g).map(h => parseInt(h, 16));
+  }
+  clear(fromPage = 0) { this.buf.fill(0, fromPage * W); }
+  // like oled_write_raw_P at the start of a text row: fills whole 32-px pages from `page`
+  raw(page, bytes) { for (let i = 0; i < bytes.length && page * W + i < this.buf.length; i++) this.buf[page * W + i] = bytes[i]; }
+  text(col, row, str, invert = false) {
+    for (let i = 0; i < str.length; i++) {
+      const code = str.charCodeAt(i);
+      const g = code >= 32 && code <= 126 ? (code - 32) * 6 : 0;
+      for (let k = 0; k < 6; k++) {
+        const x = (col + i) * 6 + k;
+        if (x < W) this.buf[row * W + x] = invert ? ~FONT[g + k] & 0xFF : FONT[g + k];
+      }
+    }
+  }
+  draw() {
+    const d = this.img.data;
+    for (let x = 0; x < W; x++) for (let y = 0; y < H; y++) {
+      const o = (y * W + x) * 4;
+      d[o] = this.rgb[0]; d[o + 1] = this.rgb[1]; d[o + 2] = this.rgb[2];
+      d[o + 3] = this.buf[(y >> 3) * W + x] >> (y & 7) & 1 ? 255 : 0;
+    }
+    this.offCtx.putImageData(this.img, 0, 0);
+    const { ctx, canvas } = this, CW = canvas.width, CH = canvas.height, s = CW / W;
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = BEZEL; ctx.fillRect(0, 0, CW, CH);
+    ctx.globalAlpha = 0.45; ctx.filter = `blur(${Math.max(1, s * 0.6)}px)`;
+    ctx.drawImage(this.off, 0, 0, CW, CH);
+    ctx.filter = 'none'; ctx.globalAlpha = 1;
+    ctx.drawImage(this.off, 0, 0, CW, CH);
+    if (s >= 3) {
+      ctx.fillStyle = BEZEL; ctx.globalAlpha = 0.55;
+      for (let x = s; x < CW; x += s) ctx.fillRect(Math.round(x) - 1, 0, 1, CH);
+      for (let y = s; y < CH; y += s) ctx.fillRect(0, Math.round(y) - 1, CW, 1);
+      ctx.globalAlpha = 1;
+    }
+  }
+}
+
+const env = { wpm: 0, ctrl: false, shift: false, alt: false, gui: false, caps: false, layer: 'QWRTY', lastKey: performance.now() - 60000 };
+const keyTimes = [];
+function pressKey(now = performance.now()) { keyTimes.push(now); env.lastKey = now; }
+function updateWpm(now) {
+  while (keyTimes.length && now - keyTimes[0] > 4000) keyTimes.shift();
+  env.wpm = Math.min(255, Math.round(keyTimes.length * 60 / 4 / 5));
+}
+const SLEEP_MS = 15000;
+const sleeping = () => env.wpm === 0 && performance.now() - env.lastKey > SLEEP_MS;
+
+// right screen text, same rows as keymap.c: LAYER / name / - / WPM / value
+function layerWpm(o) {
+  o.text(0, 0, 'LAYER');
+  o.text(0, 1, env.layer);
+  o.text(0, 3, 'WPM');
+  o.text(0, 4, String(env.wpm).padStart(3, ' '));
+}
+
+const MAGE_IDLE = [0, 0, 0, 0, 1, 1, 0, 0, 0, 2, 2];
+const GIRL_IDLE = [0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 1];
+
+const VARIANTS = [
+  {
+    id: 'luna', name: 'Luna', tags: [['now', 'Сейчас на клавиатуре']], dur: 200,
+    desc: 'Собачка внизу экрана, сверху слой и WPM. До 10 WPM сидит, до 40 идет, дальше бежит. Ctrl - крадется, Shift - прыгает, Caps Lock - лает.',
+    src: 'HellSingCoder, из kikoslab/ellora65',
+    step(o, t) {
+      const f = frames.luna, i = t % 2;
+      const set = env.caps ? f.bark : env.ctrl ? f.sneak : env.wpm <= 10 ? f.sit : env.wpm <= 40 ? f.walk : f.run;
+      o.clear();
+      layerWpm(o);
+      o.raw(env.shift ? 12 : 13, set[i]);
+    },
+  },
+  {
+    id: 'mage', name: 'Волшебница', tags: [['new', 'Новая'], ['', 'По твоей картинке']], dur: 250,
+    desc: 'Хвостики развеваются, камень в посохе мерцает. Когда печатаешь, колдует: вокруг навершия искры. Быстрее 40 WPM у ног распускаются цветы. Через 15 с без нажатий засыпает. Shift - подпрыгивает, Caps Lock - "!" над головой.',
+    src: 'сетка 64x64 из присланного пиксель-арта, переведена в 1 бит и ужата до 32 px',
+    step(o, t) {
+      const f = frames.mage;
+      let fr;
+      if (env.caps) fr = f.caps[0];
+      else if (env.shift) fr = f.jump[0];
+      else if (sleeping()) fr = f.sleep[Math.floor(t / 3) % 2];
+      else if (env.wpm <= 5) fr = f.idle[MAGE_IDLE[t % MAGE_IDLE.length]];
+      else if (env.wpm <= 40) fr = f.cast[t % 2];
+      else fr = f.fast[t % 2];
+      o.clear();
+      layerWpm(o);
+      o.raw(5, fr);
+    },
+  },
+  {
+    id: 'girl', name: 'Аниме-девочка', tags: [['', 'Мой черновик'], ['', 'Весь экран']], dur: 250,
+    desc: 'В полный рост, во весь экран, поэтому слой и WPM сюда не помещаются. Моргает, при печати пританцовывает, на скорости прыгает с поднятыми руками, после 15 с простоя засыпает.',
+    src: 'пиксель-арт 32x128',
+    step(o, t) {
+      const f = frames.girl;
+      let fr;
+      if (env.caps) fr = f.caps[0];
+      else if (env.shift) fr = f.jump[0];
+      else if (sleeping()) fr = f.sleep[Math.floor(t / 3) % 2];
+      else if (env.wpm <= 5) fr = f.idle[GIRL_IDLE[t % GIRL_IDLE.length]];
+      else if (env.wpm <= 40) fr = f.type[t % 2];
+      else fr = f.fast[t % 2];
+      o.clear();
+      o.raw(0, fr);
+    },
+  },
+  {
+    id: 'duck', name: 'Утка', tags: [['', 'Просто цикл']], dur: 200,
+    desc: 'Маленькая утка 32x32 внизу экрана, сверху слой и WPM. На печать не реагирует.',
+    src: 'из doodboard/duckboard_r2',
+    step(o, t) { o.clear(); layerWpm(o); o.raw(12, frames.duck.idle[t % 2]); },
+  },
+];
+
+// left screen, same rows as keymap.c
+function renderMods(o) {
+  o.clear();
+  o.text(0, 1, ' CTL ', env.ctrl);
+  o.text(0, 3, ' SFT ', env.shift);
+  o.text(0, 5, ' ALT ', env.alt);
+  o.text(0, 7, ' GUI ', env.gui);
+  o.text(0, 10, ' CPS ', env.caps);
+}
+
+const cardsEl = document.getElementById('cards');
+const players = [];
+let selected = 'mage';
+try { selected = localStorage.getItem('lily58-oled-pick-v') || 'mage'; } catch (e) {}
+if (!VARIANTS.some(v => v.id === selected)) selected = 'mage';
+
+for (const v of VARIANTS) {
+  const card = document.createElement('button');
+  card.type = 'button'; card.className = 'card'; card.dataset.id = v.id;
+  const canvas = document.createElement('canvas');
+  canvas.width = 96; canvas.height = 384;
+  canvas.setAttribute('aria-hidden', 'true');
+  const body = document.createElement('div'); body.className = 'card-body';
+  const head = document.createElement('div'); head.className = 'card-head';
+  const name = document.createElement('span'); name.className = 'card-name'; name.textContent = v.name;
+  head.append(name);
+  for (const [cls, label] of v.tags) { const t = document.createElement('span'); t.className = 'tag ' + cls; t.textContent = label; head.append(t); }
+  const p = document.createElement('p'); p.textContent = v.desc;
+  const src = document.createElement('div'); src.className = 'src'; src.textContent = v.src;
+  body.append(head, p, src);
+  card.append(canvas, body);
+  card.addEventListener('click', () => select(v.id));
+  cardsEl.append(card);
+  players.push({ v, oled: new Oled(canvas), t: 0, next: 0 });
+}
+
+const left = new Oled(document.getElementById('oled-left'));
+const right = { oled: new Oled(document.getElementById('oled-right')), t: 0, next: 0 };
+const rightName = document.getElementById('right-name');
+function select(id) {
+  selected = id;
+  for (const c of cardsEl.children) c.setAttribute('aria-pressed', String(c.dataset.id === id));
+  rightName.textContent = VARIANTS.find(v => v.id === id).name;
+  right.t = 0; right.next = 0;
+  try { localStorage.setItem('lily58-oled-pick-v', id); } catch (e) {}
+}
+select(selected);
+
+const MODES = {
+  demo: 'Демо: 7 с простоя, потом 6 с медленной и 6 с быстрой печати.',
+  idle: 'Никто не печатает. Через 15 с волшебница и девочка засыпают.',
+  slow: 'Ровная печать около 30 WPM.',
+  fast: 'Быстрая печать около 75 WPM.',
+  manual: 'Печатай в поле выше. Ctrl и Shift на твоей клавиатуре тоже подсвечиваются.',
+};
+let mode = 'demo', modeStart = performance.now(), nextAuto = 0;
+const modeBtns = document.querySelectorAll('#modes button');
+const hint = document.getElementById('mode-hint');
+const typebox = document.getElementById('typebox');
+function setMode(m) {
+  mode = m; modeStart = performance.now(); nextAuto = 0;
+  modeBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+  hint.textContent = MODES[m];
+}
+modeBtns.forEach(b => b.addEventListener('click', () => { setMode(b.dataset.mode); if (b.dataset.mode === 'manual') typebox.focus(); }));
+function targetRate(now) {
+  if (mode === 'slow') return 30;
+  if (mode === 'fast') return 75;
+  if (mode === 'demo') { const p = ((now - modeStart) / 1000) % 19; return p < 7 ? 0 : p < 13 ? 30 : 75; }
+  return 0;
+}
+function autoType(now) {
+  const rate = targetRate(now);
+  if (rate && now >= nextAuto) {
+    pressKey(now);
+    nextAuto = now + 60000 / (rate * 5) * (0.6 + Math.random() * 0.8);
+  }
+}
+
+const modBtns = {};
+for (const k of ['ctrl', 'shift', 'alt', 'gui', 'caps']) {
+  modBtns[k] = document.getElementById('mod-' + k);
+  modBtns[k].addEventListener('click', () => setMod(k, !env[k]));
+}
+function setMod(k, on) { env[k] = on; modBtns[k].setAttribute('aria-pressed', String(on)); }
+
+typebox.addEventListener('focus', () => { if (mode !== 'manual') setMode('manual'); });
+typebox.addEventListener('keydown', e => {
+  if (e.key === 'Control') setMod('ctrl', true);
+  else if (e.key === 'Shift') setMod('shift', true);
+  else if (e.key === 'Alt') setMod('alt', true);
+  else if (e.key === 'CapsLock') setMod('caps', !env.caps);
+  else if (!e.repeat) pressKey();
+  if (typebox.value.length > 80) typebox.value = typebox.value.slice(-40);
+});
+typebox.addEventListener('keyup', e => {
+  if (e.key === 'Control') setMod('ctrl', false);
+  else if (e.key === 'Shift') setMod('shift', false);
+  else if (e.key === 'Alt') setMod('alt', false);
+});
+typebox.addEventListener('blur', () => { setMod('ctrl', false); setMod('shift', false); setMod('alt', false); });
+
+const layerBtns = document.querySelectorAll('#layers button');
+layerBtns.forEach(b => b.addEventListener('click', () => {
+  env.layer = b.dataset.layer;
+  layerBtns.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+}));
+
+const wpmOut = document.querySelector('#wpm-out b');
+function tick(p, variant, now) {
+  if (now < p.next) return false;
+  p.next = now + variant.dur;
+  variant.step(p.oled, p.t++);
+  return true;
+}
+function loop(now) {
+  autoType(now);
+  updateWpm(now);
+  wpmOut.textContent = env.wpm;
+  renderMods(left); left.draw();
+  for (const p of players) if (tick(p, p.v, now)) p.oled.draw();
+  if (tick(right, VARIANTS.find(v => v.id === selected), now)) right.oled.draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>

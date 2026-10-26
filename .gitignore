@@ -1,0 +1,5 @@
+build/
+__pycache__/
+*.png
+host/*.log
+sprites/mage/reference.jpg
