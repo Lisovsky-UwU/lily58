@@ -29,16 +29,45 @@
 
 ## Скрипт на ПК (режим "Трек")
 
-`host/oled_feed.py` раз в секунду читает громкость системы (pycaw) и текущее медиа Windows (Media Session - то, что видно в плашке над громкостью), переводит кириллицу в латиницу (в шрифте экрана только ASCII) и шлет на клавиатуру по raw HID - тот же интерфейс, что у Vial. Если клавиатуру отключить, переподключается сам.
+`host/oled_feed.py` раз в секунду читает громкость системы и текущий трек, переводит кириллицу в латиницу (в шрифте экрана только ASCII) и шлет на клавиатуру по raw HID - тот же интерфейс, что у Vial. Если клавиатуру отключить, переподключается сам. ОС определяется автоматически:
+
+| | Громкость | Трек | HID |
+|---|---|---|---|
+| Windows | Core Audio (pycaw) | Windows Media Session (winrt) - то, что видно в плашке над громкостью | `hid` |
+| Linux | `wpctl` (PipeWire), если его нет - `pactl` | `playerctl` (MPRIS: плееры, браузеры) | `hidraw` (через драйвер ядра) |
+
+`--dry-run` - только печатать, что ушло бы на клавиатуру.
+
+### Windows
 
 ```
-uv run --python cpython-3.13-windows-x86_64-none host/oled_feed.py            # работа
-uv run --python cpython-3.13-windows-x86_64-none host/oled_feed.py --dry-run  # только печать, без клавиатуры
+uv run --python cpython-3.13-windows-x86_64-none host/oled_feed.py [--dry-run]
 ```
 
 Python указан явно: без этого uv на этой машине берет 32-битный 3.13, а под него не собирается `psutil` (зависимость pycaw).
 
 Автозапуск: ярлык `Lily58 OLED feed.lnk` в папке автозагрузки (`shell:startup`) запускает скрипт через `uvw` (без окна консоли) с `--log C:\dev\lily58\host\oled_feed.log` - туда пишутся старт и ошибки. Остановить: завершить процессы `uvw.exe`/`python.exe` с `oled_feed` в командной строке; отключить автозапуск: удалить ярлык.
+
+### Arch Linux
+
+Проверено только разбором вывода команд на примерах и запуском без них (в WSL), на живом Arch еще не запускалось.
+
+```
+sudo pacman -S --needed playerctl wireplumber uv           # wpctl входит в wireplumber
+sudo cp host/linux/59-lily58.rules /etc/udev/rules.d/       # доступ к hidraw клавиатуры без root
+sudo udevadm control --reload && sudo udevadm trigger
+uv run host/oled_feed.py --dry-run                          # проверить, что видны громкость и трек
+```
+
+Автозапуск - systemd user service (путь к репозиторию в нем `~/dev/lily58`, поправить при необходимости):
+
+```
+mkdir -p ~/.config/systemd/user && cp host/linux/lily58-oled-feed.service ~/.config/systemd/user/
+systemctl --user daemon-reload && systemctl --user enable --now lily58-oled-feed
+journalctl --user -u lily58-oled-feed -f                    # логи
+```
+
+Вместо сервиса можно `exec-once = uv run ~/dev/lily58/host/oled_feed.py` в конфиге Hyprland.
 
 Протокол (пакеты по 32 байта, обрабатывает `raw_hid_receive_kb` в `keymap.c`):
 
@@ -85,6 +114,13 @@ bash /mnt/c/dev/lily58/tools/build.sh
 
 Скрипт подключает папку `keymap/` в клон как `keyboards/lily58/rev1/keymaps/tokimen` (симлинк) и кладет результат в `build/lily58_rev1_tokimen.uf2`. Пути к клону и venv можно переопределить через `QMK` и `VENV`.
 
+На Arch все то же самое без WSL, только пакеты другие:
+
+```
+sudo pacman -S --needed make git python arm-none-eabi-gcc arm-none-eabi-binutils arm-none-eabi-newlib
+bash ~/dev/lily58/tools/build.sh
+```
+
 ## Прошивка
 
 Одна и та же прошивка на обе половинки, шить по очереди:
@@ -97,6 +133,12 @@ bash /mnt/c/dev/lily58/tools/build.sh
 
 ```
 .\tools\flash.ps1 -Uf2 .\build\lily58_rev1_tokimen.uf2
+```
+
+На Linux то же делает `tools/flash.sh` (ждет `/dev/disk/by-label/RPI-RP2`, монтирует через `udisksctl`, если диск не смонтирован автоматически, копирует и делает `sync`; нужен `udisks2`):
+
+```
+bash tools/flash.sh build/lily58_rev1_tokimen.uf2
 ```
 
 После обеих половинок: USB обратно в левую, подключить TRRS.

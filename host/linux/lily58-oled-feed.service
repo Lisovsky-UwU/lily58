@@ -1,0 +1,17 @@
+# systemd user service for host/oled_feed.py. Install:
+#   mkdir -p ~/.config/systemd/user && cp host/linux/lily58-oled-feed.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now lily58-oled-feed
+# Logs: journalctl --user -u lily58-oled-feed -f
+# Adjust the paths below if the repo is not in ~/dev/lily58 or uv is not from pacman (/usr/bin/uv).
+
+[Unit]
+Description=Lily58 right OLED: volume and current track
+After=pipewire.service
+
+[Service]
+ExecStart=/usr/bin/uv run %h/dev/lily58/host/oled_feed.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,5 @@
+# Lily58 (Vial): let the logged-in user open the raw HID interface (hidraw), needed by
+# host/oled_feed.py and by Vial itself. Install:
+#   sudo cp host/linux/59-lily58.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload && sudo udevadm trigger
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="eb2d", MODE="0660", TAG+="uaccess"

@@ -2,17 +2,20 @@
 # requires-python = ">=3.10"
 # dependencies = [
 #     "hidapi",
-#     "pycaw",
-#     "winrt-runtime",
-#     "winrt-Windows.Foundation",
-#     "winrt-Windows.Media.Control",
+#     "pycaw; sys_platform == 'win32'",
+#     "winrt-runtime; sys_platform == 'win32'",
+#     "winrt-Windows.Foundation; sys_platform == 'win32'",
+#     "winrt-Windows.Media.Control; sys_platform == 'win32'",
 # ]
 # ///
 """Feeds the Lily58 right screen (media mode) with system volume and the current track.
 
+Windows: volume from Core Audio (pycaw), track from the Windows media session (winrt).
+Linux:   volume from PipeWire (wpctl, falls back to pactl), track from MPRIS players (playerctl).
+
 Run:  uv run host/oled_feed.py                 (sends every second, reconnects if the keyboard is unplugged)
       uv run host/oled_feed.py --dry-run       (prints what would be sent, no keyboard needed)
-      uvw run host/oled_feed.py --log FILE     (no console window; errors go to FILE)
+      uvw run host/oled_feed.py --log FILE     (Windows, no console window; errors go to FILE)
 
 Protocol (32-byte raw HID packets, same interface as Vial; see raw_hid_receive_kb in keymap/keymap.c):
   0x40 0x01 volume flags text_len      flags: 0x01 playing, 0x02 muted
@@ -20,13 +23,26 @@ Protocol (32-byte raw HID packets, same interface as Vial; see raw_hid_receive_k
 """
 
 import asyncio
+import re
+import shutil
+import subprocess
 import sys
 import time
 import unicodedata
 
-import hid
-from pycaw.pycaw import AudioUtilities
-from winrt.windows.media.control import GlobalSystemMediaTransportControlsSessionManager as MediaManager
+WINDOWS = sys.platform == "win32"
+
+if WINDOWS:
+    import hid
+    from pycaw.pycaw import AudioUtilities
+    from winrt.windows.media.control import GlobalSystemMediaTransportControlsSessionManager as MediaManager
+else:
+    try:
+        # the hidraw backend talks to the kernel HID driver; the default libusb one
+        # would try to take the USB interface away from it
+        import hidraw as hid
+    except ImportError:
+        import hid
 
 VID, PID = 0x04D8, 0xEB2D
 USAGE_PAGE, USAGE = 0xFF60, 0x61  # raw HID interface of QMK/Vial
@@ -57,13 +73,13 @@ def to_ascii(text: str) -> str:
     return "".join(out)
 
 
-def read_volume():
+def read_volume_windows():
     speakers = AudioUtilities.GetSpeakers()
     endpoint = speakers.EndpointVolume  # pycaw >= 2024
     return round(endpoint.GetMasterVolumeLevelScalar() * 100), bool(endpoint.GetMute())
 
 
-async def read_track():
+async def read_track_windows():
     manager = await MediaManager.request_async()
     session = manager.get_current_session()
     if session is None:
@@ -71,6 +87,54 @@ async def read_track():
     props = await session.try_get_media_properties_async()
     playing = session.get_playback_info().playback_status == PLAYING_STATUS
     return props.title or "", props.artist or "", playing
+
+
+def run(*cmd: str) -> str:
+    """stdout of a command, empty if it is missing or fails (no player, no audio server yet)."""
+    if not shutil.which(cmd[0]):
+        return ""
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=2)
+    return result.stdout if result.returncode == 0 else ""
+
+
+def parse_wpctl(out: str):
+    # "Volume: 0.45" or "Volume: 0.45 [MUTED]"
+    m = re.search(r"Volume:\s*([\d.]+)", out)
+    if not m:
+        return None
+    return min(100, round(float(m.group(1)) * 100)), "[MUTED]" in out
+
+
+def parse_pactl(volume_out: str, mute_out: str):
+    # "Volume: front-left: 29491 /  45% / -20.81 dB,   front-right: ..." and "Mute: yes"
+    m = re.search(r"(\d+)%", volume_out)
+    if not m:
+        return None
+    return min(100, int(m.group(1))), "yes" in mute_out
+
+
+def parse_playerctl(out: str):
+    # one line: status<TAB>artist<TAB>title
+    parts = out.rstrip("\n").split("\t")
+    if len(parts) != 3:
+        return "", "", False
+    status, artist, title = parts
+    return title, artist, status == "Playing"
+
+
+def read_volume_linux():
+    vol = parse_wpctl(run("wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@"))
+    if vol is None:
+        vol = parse_pactl(run("pactl", "get-sink-volume", "@DEFAULT_SINK@"), run("pactl", "get-sink-mute", "@DEFAULT_SINK@"))
+    return vol or (0, False)
+
+
+async def read_track_linux():
+    return parse_playerctl(run("playerctl", "metadata", "--format", "{{status}}\t{{artist}}\t{{title}}"))
+
+
+read_volume = read_volume_windows if WINDOWS else read_volume_linux
+read_track = read_track_windows if WINDOWS else read_track_linux
 
 
 def media_text(title: str, artist: str) -> str:
@@ -116,7 +180,7 @@ async def main(dry_run: bool):
         try:
             volume, muted = read_volume()
             title, artist, playing = await read_track()
-        except OSError as e:  # audio device or media session briefly unavailable
+        except (OSError, subprocess.SubprocessError) as e:  # audio device or media session briefly unavailable
             log(f"read failed: {e}")
             await asyncio.sleep(1)
             continue
@@ -139,7 +203,8 @@ async def main(dry_run: bool):
 
 if __name__ == "__main__":
     if "--log" in sys.argv:
-        # started without a console (uvw): keep errors in a file
+        # started without a console (uvw on Windows): keep errors in a file;
+        # under systemd stderr already goes to the journal
         sys.stderr = open(sys.argv[sys.argv.index("--log") + 1], "a", encoding="utf-8")
     log("started")
     asyncio.run(main("--dry-run" in sys.argv))
