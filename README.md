@@ -50,7 +50,7 @@ Python указан явно: без этого uv на этой машине б
 
 ### Arch Linux
 
-Проверено только разбором вывода команд на примерах и запуском без них (в WSL), на живом Arch еще не запускалось.
+Проверено на Arch (PipeWire, Hyprland) 27.10.2026: громкость, трек и отправка по hidraw работают.
 
 ```
 sudo pacman -S --needed playerctl wireplumber uv           # wpctl входит в wireplumber
@@ -66,6 +66,8 @@ mkdir -p ~/.config/systemd/user && cp host/linux/lily58-oled-feed.service ~/.con
 systemctl --user daemon-reload && systemctl --user enable --now lily58-oled-feed
 journalctl --user -u lily58-oled-feed -f                    # логи
 ```
+
+Если на экране `NO DATA FROM PC` - скрипт не запущен: прошивка держит данные только 5 с после последнего пакета. Проверить: `systemctl --user is-active lily58-oled-feed`.
 
 Вместо сервиса можно `exec-once = uv run ~/dev/lily58/host/oled_feed.py` в конфиге Hyprland.
 
